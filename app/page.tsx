@@ -66,7 +66,7 @@ export default function Home() {
     return () => {
       window.removeEventListener("resize", updateViewportSize)
     }
-  }, [])
+  }, [numNoClicks])
 
   const router = useRouter()
 
@@ -75,11 +75,11 @@ export default function Home() {
       setLoading(true)
       const email = process.env.NODEMAILER_EMAIL
       const message = "Congrats for the W"
-      // const response = await fetch("/api/email", {
-      //   method: "POST",
-      //   body: JSON.stringify({ email, message }),
-      // })
-      // const jsonData = await response.json()
+      const response = await fetch("/api/email", {
+        method: "POST",
+        body: JSON.stringify({ email, message }),
+      })
+      const jsonData = await response.json()
       router.push("/yes")
     } catch (error) {
       setLoading(false)
