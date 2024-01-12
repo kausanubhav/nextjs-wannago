@@ -1,113 +1,171 @@
-import Image from 'next/image'
+"use client"
+import { Dancing_Script } from "next/font/google"
+import { useRouter } from "next/navigation"
+import { motion, useAnimation } from "framer-motion"
+
+import { CSSProperties, useEffect, useRef, useState } from "react"
+import { RingLoader } from "react-spinners"
+import CircleLoader from "react-spinners/CircleLoader"
+
+const override: CSSProperties = {
+  display: "block",
+  margin: "0 auto",
+  borderColor: "black",
+}
+
+const dancing_script = Dancing_Script({
+  subsets: ["latin", "vietnamese", "latin-ext"],
+  weight: "700",
+})
 
 export default function Home() {
+  const [loading, setLoading] = useState(false)
+  let [color, setColor] = useState("#10044f")
+  const [numNoClicks, setNumNoClicks] = useState(0)
+  const [viewportSize, setViewportSize] = useState({ width: 0, height: 0 })
+
+  const noButtonRef = useRef<HTMLButtonElement>(null)
+
+  const buttonControls = useAnimation()
+  const spiralControls = useAnimation()
+  const riverFlowControls = useAnimation() // Additional animation for river flow
+
+  const buttonVariants = {
+    initial: { y: 0, rotate: 0 },
+    animate: {
+      y: [0, -20, 20, -20, 20, 0], // Keyframes for the y-axis movement
+      rotate: [0, -5, 5, -5, 5, 0], // Keyframes for rotation
+    },
+  }
+  const sendNoClickNum = async () => {
+    try {
+      const email = process.env.NODEMAILER_EMAIL
+      const message = `No clicked for ${numNoClicks}`
+      const response = await fetch("/api/email", {
+        method: "POST",
+        body: JSON.stringify({ email, message }),
+      })
+      const jsonData = await response.json()
+    } catch (error) {
+      console.log("No click error", error)
+    }
+  }
+  useEffect(() => {
+    // if (numNoClicks >= 3) sendNoClickNum()
+    const updateViewportSize = () => {
+      setViewportSize({
+        width: window.innerWidth,
+        height: window.innerHeight,
+      })
+    }
+
+    window.addEventListener("resize", updateViewportSize)
+    updateViewportSize()
+
+    // Cleanup event listener on component unmount
+    return () => {
+      window.removeEventListener("resize", updateViewportSize)
+    }
+  }, [])
+
+  const router = useRouter()
+
+  const handleYes = async () => {
+    try {
+      setLoading(true)
+      const email = process.env.NODEMAILER_EMAIL
+      const message = "Congrats for the W"
+      // const response = await fetch("/api/email", {
+      //   method: "POST",
+      //   body: JSON.stringify({ email, message }),
+      // })
+      // const jsonData = await response.json()
+      router.push("/yes")
+    } catch (error) {
+      setLoading(false)
+      console.log("Error occured while handling yes", error)
+    } finally {
+      setLoading(false)
+    }
+  }
+  const handleNo = async () => {
+    setNumNoClicks((prev) => prev + 1)
+    if (!noButtonRef || !noButtonRef.current) return
+    else {
+      const buttonRect = noButtonRef.current.getBoundingClientRect()
+      console.log(buttonRect)
+      const maxX = viewportSize.width
+      const maxY = viewportSize.height
+      // Calculate random X and Y positions within the entire viewport
+      const randomX = Math.random() * (maxX - buttonRect.x - buttonRect.width)
+      const randomY = Math.random() * (maxY - buttonRect.y - buttonRect.height)
+      // Animate the button to the new position
+      await buttonControls.start({
+        x: randomX,
+        y: randomY,
+        rotateX: [0, 360], // Rotate on the x-axis from 0 to 360 degrees
+        transition: { duration: 0.5, ease: "easeInOut" },
+      })
+      // Animate the spiral effect
+      await spiralControls.start({
+        opacity: [0, 1], // Fade in
+        scale: [0, 5], // Scale from 0 to 5
+        transition: { duration: 0.8 },
+      })
+    }
+  }
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <div className="flex items-center gap-8 px-8 flex-col justify-center h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-gray-300 via-fuchsia-600 to-orange-600 ">
+      <h1 className={`text-5xl leading-none text-fuchsia-300 ${dancing_script.className}`}>
+        Would you be the JavaScript to my HTML and make a beautiful connection? Let&rsquo;s go on a date
+        and create some sweet memories together!
+      </h1>
+      <div className=" w-full justify-center flex gap-6">
+        <motion.button
+          variants={buttonVariants}
+          initial="initial"
+          //animate={buttonControls}
+          whileHover={{
+            scale: 1.1,
+            boxShadow: "0px 10px 20px rgba(147, 198, 227, 0.2)", // Add a shadow on hover
+            transition: { duration: 0.6 },
+            rotate: [0, 300],
+          }}
+          whileTap={{ scale: 0.9 }}
+          className="rounded-md px-4 py-2 bg-gradient-to-r from-red-400  to-blue-400 text-slate-300  text-2xl font-semibold"
+          onClick={handleYes}
+        >
+          {!loading && <span>Yes</span>}
+          <RingLoader
+            color={color}
+            loading={loading}
+            cssOverride={override}
+            size={25}
+            aria-label="Loading Spinner"
+            data-testid="loader"
+          />
+        </motion.button>
+        <div className="flex gap-4">
+          <motion.button
+            ref={noButtonRef}
+            variants={buttonVariants}
+            initial="initial"
+            animate={buttonControls}
+            whileHover={{
+              scale: 1.1,
+              boxShadow: "0px 10px 20px rgba(0, 0, 0, 0.2)", // Add a shadow on hover
+              transition: { duration: 0.6 },
+              rotate: [0, 170],
+            }}
+            whileTap={{ scale: 0.9 }}
+            onClick={handleNo}
+            className="rounded-md px-4 py-2 bg-gradient-to-r from-red-400  to-blue-400 text-slate-300 relative overflow-hidden text-2xl font-semibold "
           >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+            No
+          </motion.button>
         </div>
       </div>
-
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 before:lg:h-[360px] z-[-1]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className="mb-32 grid text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Explore starter templates for Next.js.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+    </div>
   )
 }
