@@ -51,7 +51,7 @@ export default function Home() {
     }
   }
   useEffect(() => {
-    // if (numNoClicks >= 3) sendNoClickNum()
+    if (numNoClicks >= 3) sendNoClickNum()
     const updateViewportSize = () => {
       setViewportSize({
         width: window.innerWidth,
