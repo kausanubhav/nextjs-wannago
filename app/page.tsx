@@ -117,9 +117,10 @@ export default function Home() {
 
   return (
     <div className="flex items-center gap-8 px-8 flex-col justify-center h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-gray-300 via-fuchsia-600 to-orange-600 ">
-      <h1 className={`text-5xl leading-none text-fuchsia-300 ${dancing_script.className}`}>
-        Would you be the JavaScript to my HTML and make a beautiful connection? Let&rsquo;s go on a date
-        and create some sweet memories together!
+      <h1 className={` text-center text-5xl leading-none text-fuchsia-300 ${dancing_script.className}`}>
+        {/* Would you be the JavaScript to my HTML and make a beautiful connection? Let&rsquo;s go on a date
+        and create some sweet memories together! */}
+        Would you like to go out with me today?
       </h1>
       <div className=" w-full justify-center flex gap-6">
         <motion.button
